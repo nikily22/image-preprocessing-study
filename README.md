@@ -1,40 +1,74 @@
-# image-preprocessing-study
-# Image Classification Performance: Impact of Preprocessing and Augmentation
+AI Hardware Acceleration Study: From Python to C++ Silicon Modeling
 
-## Goal
+Project Status: Complete (Functional C++ Inference Engine)
+Domain: Hardware-Software Co-Design / Computer Architecture
 
-To investigate and quantify the impact of common image preprocessing (pixel normalization) and data augmentation techniques (specifically random horizontal flips and random rotations) on the classification accuracy of a simple Convolutional Neural Network (CNN) trained on the MNIST dataset.
+1. Project Overview
 
-## Dataset
+This project demonstrates the end-to-end workflow of an AI Hardware Architect. The goal was not just to train a model, but to deconstruct it into its raw mathematical primitives and execute it on a custom C++ simulation engine, mimicking the behavior of a dedicated hardware accelerator.
 
-* **Initial Dataset:** MNIST Handwritten Digits Dataset
-    * **Source:** Commonly available via libraries like TensorFlow/Keras datasets, or downloadable from sources like Kaggle or Yann LeCun's website.
-    * **Description:** Grayscale images of handwritten digits (0-9), size 28x28 pixels. Contains 60,000 training images and 10,000 testing images.
+The Pipeline:
 
-## Planned Steps / Methodology
+1. Training (Python/TensorFlow): A "Golden Reference" model (MLP) trained on MNIST to 91% accuracy.
 
-1.  **Data Loading & Exploration:** Load the MNIST dataset. Explore its structure, dimensions, and visualize sample images.
-2.  **Baseline Preparation:** Implement minimal preprocessing (e.g., reshaping arrays, scaling pixel values to [0, 1]). Split data into training, validation, and testing sets.
-3.  **Baseline Model:** Build and train a simple Convolutional Neural Network (CNN) architecture using TensorFlow/Keras on the minimally processed training data. Evaluate its performance (accuracy, loss) on the test set.
-4.  **Preprocessing/Augmentation Implementation:**
-    * Implement pixel value normalization (if different from baseline).
-    * Implement random horizontal flips for the training data.
-    * Implement random rotations (e.g., within a small degree range like 10 degrees) for the training data.
-5.  **Augmented Model Training:** Train the *exact same* CNN architecture using the training data with the specified augmentation techniques applied. Evaluate performance on the *same* test set.
-6.  **Comparison & Analysis:** Compare performance metrics (accuracy, loss curves on validation/test sets) between the baseline model and the model trained with augmented data.
-7.  **Documentation:** Document the process, code, results, and conclusions clearly in this repository and potentially Jupyter Notebooks.
+2. Extraction: Raw weights and biases serialized to CSV, acting as the system "ROM".
 
-## Technologies / Libraries Planned
+3. Simulation (C++): A custom-built, library-free inference engine that mimics the ALU and Memory operations of a hardware accelerator.
 
-* **Language:** Python 3.x
-* **Core Libraries:**
-    * NumPy: For numerical operations and handling image arrays.
-    * Pandas: For organizing and potentially saving experiment results.
-    * Matplotlib: For visualizing images and plotting results (e.g., accuracy/loss curves).
-    * TensorFlow / Keras: For building, training, and evaluating the CNN model, and implementing data augmentation.
-    * PIL (Pillow) / OpenCV: For basic image loading/manipulation if needed outside TensorFlow/Keras pipeline.
-* **Version Control:** Git / GitHub
+2. Technical Stack
 
----
+- Modeling: Python 3.11, TensorFlow (Metal/Mac Optimized), NumPy.
 
-*(This README will be updated as the project progresses with Installation instructions, Usage examples, detailed Results, and Future Work sections.)*
+- Simulation: C++11 (Standard Library only - No external ML frameworks).
+
+- Architecture: Multi-Layer Perceptron (784 Input -> 128 Hidden -> 10 Output).
+
+- Data Flow: Matrix Multiplication -> Bias Addition -> ReLU -> Softmax.
+
+3. Results Verification
+
+The C++ Hardware Simulator successfully replicated the Python model's behavior with bit-exact precision on test inputs.
+
+Input: MNIST Digit '5'Python Prediction: Class 5 (99.0%)C++ Simulator Prediction: Class 5 (99.00%)
+
+ [System] Booting AI Hardware Simulator...
+ [Memory] Loading Weights...
+ [System] System Ready. Waiting for Input...
+ [Core] Executing Layer 1...
+ [Core] Executing Output Layer...
+
+ [Result] Prediction Probabilities:
+ ...
+ Digit 5: 0.9900
+ ...
+ [Final Answer] The Hardware predicts: 5
+
+4. Key Architectural Concepts Demonstrated
+
+- Memory Mapping: Loading "Weights" as read-only memory blocks.
+
+- Control Flow: Manually sequencing the Fetch-Execute cycle for each layer.
+
+- LU Operations: Implementing the core Multiply-Accumulate (MAC) logic from scratch.
+
+- Hardware-Software Interface: Bridging high-level abstract models (Python) with low-level     
+execution (C++).
+
+5. How to Run
+
+Prerequisite
+
+- C++ Compiler (clang++ or g++)
+
+- Python 3.x (for weight generation)
+
+1. Generate Weights (Python)
+
+python3 notebooks/2_baseline_model.ipynb
+# This creates the /model_data directory with CSV weights
+
+
+2. Compile & Run Simulator (C++)
+
+clang++ -std=c++11 hardware_sim.cpp -o hardware_sim
+./hardware_sim
